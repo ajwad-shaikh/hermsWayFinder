@@ -1,14 +1,26 @@
 package ml.ajwad.hermswayfinder;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.view.View;
+import android.os.StrictMode;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
@@ -17,11 +29,18 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 public class MonitorActivity extends AppCompatActivity {
 
-    ArrayList<String> listItems = new ArrayList<String>();
+    ArrayList<String> listItems = new ArrayList<>();
     ArrayAdapter<String> adapter;
-    private ListView mListView;
+    ProgressDialog pd;
+    String txtJSON;
+    ArrayList<String> routeSteps = new ArrayList<>();
 
     String newQuery;
+    String sourceFinal;
+    String destFinal;
+    String seekURI;
+
+    String saldo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,10 +48,10 @@ public class MonitorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_monitor);
         LocalBroadcastManager.getInstance(this).
                 registerReceiver(lookForQuery, new IntentFilter("Inbox"));
-        adapter = new ArrayAdapter<String>(this,
+        adapter = new ArrayAdapter<>(this,
                 R.layout.list_row,
                 listItems);
-        mListView = (ListView) findViewById(R.id.listMonitor);
+        ListView mListView = findViewById(R.id.listMonitor);
         mListView.setAdapter(adapter);
     }
 
@@ -46,12 +65,12 @@ public class MonitorActivity extends AppCompatActivity {
                 String endTag = "</hermsWay>";
                 String source = newQuery.substring
                         (newQuery.indexOf(sourcePlace)+sourcePlace.length(),
-                                newQuery.indexOf(destPlace));
+                                newQuery.indexOf(destPlace)-1);
                 String dest = newQuery.substring
                         (newQuery.indexOf(destPlace)+destPlace.length(),
                                 newQuery.indexOf(endTag)-1);
+                seekDirectionsResponse(source, dest);
                 addToList(source, dest);
-
             }
         }
     };
@@ -59,13 +78,43 @@ public class MonitorActivity extends AppCompatActivity {
     private void addToList(String source, String dest) {
         Timestamp tsTemp = new Timestamp((int) System.currentTimeMillis());
         String timeStamp = tsTemp.toString();
-        String listText = "Timestamp : " + timeStamp + "\nSource : "
-                + source + "\nDestination : " + dest;
+        String listText = "Timestamp : " + timeStamp + "\nInput Source : "
+                + source + "\nInput Destination : " + dest + "\nIdentified Source : "
+                + sourceFinal + "\nIdentified Destination : " + destFinal ;
         listItems.add(listText);
         adapter.notifyDataSetChanged();
     }
 
-    private void seekDirectionsResponse(String source, String dest){
-
+    private void seekDirectionsResponse(String source, String dest) {
+        Resources resources = getResources();
+        seekURI = resources.getString(R.string.seek_url_origin) + source +
+                resources.getString(R.string.seek_url_destination) + dest +
+                resources.getString(R.string.seek_url_key )+
+                resources.getString(R.string.directions_api_key);
+        seekURI = seekURI.replace(" ","+");
+        Log.d("seekURI",seekURI);
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        try {
+            JSONObject response = new JSONObject(IOUtils.toString(new URL(seekURI), Charset.forName("UTF-8")));
+            Log.d("response", response.toString());
+            JSONArray stepsArray = response.getJSONArray("routes").getJSONObject(0)
+                    .getJSONArray("legs").getJSONObject(0).getJSONArray("steps");
+            sourceFinal = response.getJSONArray("routes").getJSONObject(0).
+                    getJSONArray("legs").getJSONObject(0).getString("start_address");
+            destFinal = response.getJSONArray("routes").getJSONObject(0).
+                    getJSONArray("legs").getJSONObject(0).getString("end_address");
+            for(int b = 0; b < stepsArray.length(); b++){
+                JSONObject instObject = stepsArray.getJSONObject(b);
+                routeSteps.add(instObject.getString("html_instructions"));
+                Log.d("routes",instObject.getString("html_instructions"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

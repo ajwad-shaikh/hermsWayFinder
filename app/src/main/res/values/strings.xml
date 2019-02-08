@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">hermsWayFinder</string>
+    <string name="seek_url_origin">"https://maps.googleapis.com/maps/api/directions/json?origin="</string>
+    <string name="seek_url_destination">"&amp;destination="</string>
+    <string name="seek_url_key">"&amp;language=en&amp;key="</string>
+
+    <string name="directions_api_key">AIzaSyDgVBXBu7gSF3FvwXV3Wldi8sHnUACluRA</string>
+
 </resources>
