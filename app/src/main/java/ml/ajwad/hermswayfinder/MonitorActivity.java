@@ -1,5 +1,6 @@
 package ml.ajwad.hermswayfinder;
 
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -16,6 +18,8 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -36,6 +40,7 @@ public class MonitorActivity extends AppCompatActivity {
     ArrayList<String> routeSteps = new ArrayList<>();
 
     String newQuery;
+    String querySender;
     String sourceFinal;
     String destFinal;
     String seekURI;
@@ -60,6 +65,7 @@ public class MonitorActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equalsIgnoreCase("Inbox")) {
                 newQuery = intent.getStringExtra("message");
+                querySender = intent.getStringExtra("sender");
                 String sourcePlace = "Source : ";
                 String destPlace = "Destination : ";
                 String endTag = "</hermsWay>";
@@ -69,8 +75,11 @@ public class MonitorActivity extends AppCompatActivity {
                 String dest = newQuery.substring
                         (newQuery.indexOf(destPlace)+destPlace.length(),
                                 newQuery.indexOf(endTag)-1);
+                routeSteps.clear();
+                sourceFinal = destFinal = seekURI = "";
                 seekDirectionsResponse(source, dest);
                 addToList(source, dest);
+                sendData();
             }
         }
     };
@@ -117,4 +126,20 @@ public class MonitorActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private void sendData(){
+        StringBuilder smsMessage = new StringBuilder();
+        for(int a = 0; a < routeSteps.size(); a++){
+            Document doc = Jsoup.parse(routeSteps.get(a));
+            smsMessage.append(doc.body().text()).append("\n");
+        }
+        String message = smsMessage.toString();
+        Log.d("message", message);
+        SmsManager smsManager = SmsManager.getDefault();
+        smsManager.sendTextMessage
+                (querySender, null, message,
+                        null, null);
+
+    }
+
 }

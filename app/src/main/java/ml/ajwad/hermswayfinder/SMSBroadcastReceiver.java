@@ -29,12 +29,14 @@ public class SMSBroadcastReceiver extends BroadcastReceiver{
                     shortMessage = new SmsMessage[pdus.length];
                     for (int i=0; i<shortMessage.length; i++){
                         shortMessage[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                        String sender = shortMessage[i].getOriginatingAddress();
                         String messageBody = shortMessage[i].getMessageBody();
                         sms_str += messageBody;
                         Log.d("Receive Message", messageBody);
                         if(sms_str.startsWith("<hermsWay>")) {
                             sms_str += ("\n" + shortMessage[i].getMessageBody());
                             Intent smsIntent = new Intent("Inbox");
+                            smsIntent.putExtra("sender", sender);
                             smsIntent.putExtra("message", sms_str);
                             LocalBroadcastManager.getInstance(context).sendBroadcast(smsIntent);
                         }
