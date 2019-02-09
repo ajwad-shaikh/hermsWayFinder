@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.telephony.SmsManager;
@@ -26,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -85,8 +87,7 @@ public class MonitorActivity extends AppCompatActivity {
     };
 
     private void addToList(String source, String dest) {
-        Timestamp tsTemp = new Timestamp((int) System.currentTimeMillis());
-        String timeStamp = tsTemp.toString();
+        String timeStamp = DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
         String listText = "Timestamp : " + timeStamp + "\nInput Source : "
                 + source + "\nInput Destination : " + dest + "\nIdentified Source : "
                 + sourceFinal + "\nIdentified Destination : " + destFinal ;
