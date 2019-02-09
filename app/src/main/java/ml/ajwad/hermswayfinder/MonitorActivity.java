@@ -1,6 +1,5 @@
 package ml.ajwad.hermswayfinder;
 
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 
