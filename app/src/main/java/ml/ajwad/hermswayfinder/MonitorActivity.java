@@ -68,16 +68,20 @@ public class MonitorActivity extends AppCompatActivity {
                 querySender = intent.getStringExtra("sender");
                 String sourcePlace = "Source : ";
                 String destPlace = "Destination : ";
+                String langPlace = "Lang : ";
                 String endTag = "</hermsWay>";
                 String source = newQuery.substring
                         (newQuery.indexOf(sourcePlace)+sourcePlace.length(),
                                 newQuery.indexOf(destPlace)-1);
                 String dest = newQuery.substring
                         (newQuery.indexOf(destPlace)+destPlace.length(),
+                                newQuery.indexOf(langPlace)-1);
+                String lang = newQuery.substring
+                        (newQuery.indexOf(langPlace) + langPlace.length(),
                                 newQuery.indexOf(endTag)-1);
                 routeSteps.clear();
                 sourceFinal = destFinal = seekURI = "";
-                seekDirectionsResponse(source, dest);
+                seekDirectionsResponse(source, dest, lang);
                 addToList(source, dest);
                 sendData();
             }
@@ -93,7 +97,7 @@ public class MonitorActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
-    private void seekDirectionsResponse(String source, String dest) {
+    private void seekDirectionsResponse(String source, String dest, String lang) {
         Resources resources = getResources();
         seekURI = resources.getString(R.string.seek_url_origin) + source +
                 resources.getString(R.string.seek_url_destination) + dest +
@@ -134,9 +138,10 @@ public class MonitorActivity extends AppCompatActivity {
         }
         String message = smsMessage.toString();
         Log.d("message", message);
+        Log.d("querySender", querySender);
         SmsManager smsManager = SmsManager.getDefault();
         smsManager.sendTextMessage
-                (querySender, null, message,
+                (querySender, null, message.substring(0, 100),
                         null, null);
 
     }
