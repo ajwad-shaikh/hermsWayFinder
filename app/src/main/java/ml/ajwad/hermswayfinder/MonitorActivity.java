@@ -27,6 +27,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -140,10 +141,26 @@ public class MonitorActivity extends AppCompatActivity {
         Log.d("message", message);
         Log.d("querySender", querySender);
         SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage
-                (querySender, null, message.substring(0, 100),
-                        null, null);
-
+        if(message.length() <= 120) {
+            String newMessage = "<hw(1:1)>";
+            newMessage = newMessage + message + "</hW>";
+            smsManager.sendTextMessage
+                    (querySender, null, newMessage,
+                            null, null);
+        }
+        else {
+            List<String> messageList = new ArrayList<>();
+            for(int a = 0; a < message.length(); a+=120)
+                messageList.add(message.substring(a, Math.min(message.length(), a + 120)));
+            for(int a = 0; a < messageList.size(); a++)
+            {
+                String sendInstance = "<hW(" + (a + 1) + ":" + messageList.size() + ")>";
+                sendInstance += (messageList.get(a) + "</hW>");
+                smsManager.sendTextMessage
+                        (querySender, null, sendInstance,
+                                null, null);
+            }
+        }
     }
 
 }
