@@ -142,7 +142,7 @@ public class MonitorActivity extends AppCompatActivity {
         Log.d("querySender", querySender);
         SmsManager smsManager = SmsManager.getDefault();
         if(message.length() <= 120) {
-            String newMessage = "<hw(1:1)>";
+            String newMessage = "<hW(1:1)>";
             newMessage = newMessage + message + "</hW>";
             smsManager.sendTextMessage
                     (querySender, null, newMessage,
